@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>All About Hair × KKO — Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEEBE4;--panel:#FBFAF7;--panel2:#F4F2EC;--line:#DED9CE;--line2:#E9E5DC;
+  --ink:#1C1B22;--muted:#6E6A60;--faint:#96907F;
+  --awo:#2F6C93;--awo-soft:#DCE9F0;--promo:#D2622E;--promo-soft:#F4E2D5;--plan:#A9A395;
+  --good:#1E8F63;--good-bg:#E1F0E7;--warn:#C08A15;--warn-bg:#F6EBD2;--bad:#C24242;--bad-bg:#F5E0DE;
+  --accent:#8C3A70;--spend:#586471;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;--disp:"Space Grotesk",system-ui,sans-serif;--body:"Inter",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;line-height:1.45}
+.wrap{max-width:1220px;margin:0 auto;padding:22px 20px 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:-.01em;margin:6px 0 2px}
+.sub{color:var(--muted);font-size:13px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+.livepill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,143,99,.5)}70%{box-shadow:0 0 0 7px rgba(30,143,99,0)}100%{box-shadow:0 0 0 0 rgba(30,143,99,0)}}
+
+/* control bar */
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:18px 0 6px}
+.ctl{display:flex;flex-direction:column;gap:5px}
+.ctl label{font-size:10.5px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.ctl input[type=date]{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{font-family:var(--body);font-weight:600;font-size:12.5px;color:var(--muted);background:none;border:0;padding:8px 15px;border-radius:8px;cursor:pointer;transition:.15s}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button:not(.on):hover{color:var(--ink)}
+.seg.awo button.on{background:var(--awo)}.seg.promo button.on{background:var(--promo)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer}
+.chips button:hover{border-color:var(--accent);color:var(--accent)}
+.chips button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.spacer{flex:1}
+
+.insight{background:linear-gradient(180deg,#FBFAF7,#F4F2EC);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:13px 16px;margin:14px 0 4px;font-size:13px;color:var(--ink)}
+.insight b{color:var(--accent)}
+
+.secttl{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:32px 0 13px;display:flex;align-items:center;gap:10px}
+.secttl::after{content:"";flex:1;height:1px;background:var(--line)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px 14px;position:relative;overflow:hidden}
+.card .kl{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.badge{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px}
+.b-good{background:var(--good-bg);color:var(--good)}.b-warn{background:var(--warn-bg);color:var(--warn)}.b-bad{background:var(--bad-bg);color:var(--bad)}
+.kv{font-family:var(--mono);font-weight:600;font-size:26px;letter-spacing:-.02em;margin:9px 0 2px;line-height:1}
+.kmeta{font-size:11.5px;color:var(--muted)}.kmeta b{color:var(--ink);font-weight:600}
+.bar{height:5px;background:var(--line2);border-radius:3px;margin-top:11px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:3px;transition:width .8s cubic-bezier(.2,.7,.2,1)}
+.edge{position:absolute;left:0;top:0;bottom:0;width:3px}
+
+.stripe{display:grid;grid-template-columns:repeat(6,1fr);gap:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:12px}
+.stripe .st{padding:12px 15px;border-right:1px solid var(--line2)}
+.stripe .st:last-child{border-right:0}
+.stripe .sl{font-size:11px;color:var(--muted)}
+.stripe .sv{font-family:var(--mono);font-weight:600;font-size:17px;margin-top:3px}
+.stripe .sd{font-size:10.5px;color:var(--faint);margin-top:2px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-split{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px 18px}
+.panel h3{font-family:var(--disp);font-weight:600;font-size:14px;margin:0 0 3px}
+.panel .ph{font-size:12px;color:var(--muted);margin:0 0 14px}
+.chart-h{position:relative;height:300px}.chart-h.sm{height:230px}.chart-h.tall{height:330px}
+
+.cmp{display:flex;flex-direction:column;gap:13px}
+.cmprow .cmpt{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.cmpt .nm{font-weight:600}.cmpt .nm i{font-style:normal;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:5px;margin-left:6px}
+.tag-awo{background:var(--awo-soft);color:var(--awo)}.tag-promo{background:var(--promo-soft);color:var(--promo)}
+.track{height:22px;background:var(--panel2);border:1px solid var(--line2);border-radius:7px;position:relative;overflow:hidden}
+.track .fill{position:absolute;top:0;bottom:0;left:0;border-radius:6px 0 0 6px}
+.track .planmark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.track .planmark::after{content:"plan";position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8.5px;color:var(--muted);white-space:nowrap}
+.cmpnum{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px;display:flex;justify-content:space-between}
+.cmpnum b{color:var(--ink)}
+
+.events{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ev{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px;position:relative}
+.ev .evd{font-family:var(--mono);font-size:11px;color:var(--promo);font-weight:600}
+.ev h4{font-family:var(--disp);font-size:15px;margin:3px 0 12px}
+.ev .roasbig{font-family:var(--mono);font-weight:600;font-size:29px;line-height:1}
+.ev .roaslb{font-size:11px;color:var(--muted)}
+.evgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px;font-size:12px}
+.evgrid .l{color:var(--muted)}.evgrid .v{font-family:var(--mono);font-weight:600;text-align:right}
+
+.tblwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:right;font-weight:600;color:var(--muted);font-size:11px;padding:11px 13px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th:hover{color:var(--ink)}
+td{padding:10px 13px;border-bottom:1px solid var(--line2);text-align:right;font-family:var(--mono);font-weight:500}
+tr:last-child td{border-bottom:0}td.name{font-family:var(--body);font-weight:500;max-width:230px}
+.pill{font-family:var(--mono);font-size:9.5px;padding:2px 6px;border-radius:5px;margin-right:6px;font-weight:600}
+.chip{display:inline-block;min-width:46px;padding:2px 7px;border-radius:6px;font-weight:600}
+tbody tr:hover{background:var(--panel2)}
+
+.funnel{display:flex;flex-direction:column;gap:9px}
+.frow{display:grid;grid-template-columns:165px 1fr 58px;align-items:center;gap:11px;font-size:12px}
+.frow .fl{color:var(--muted)}.frow .fl b{color:var(--ink);font-weight:600}
+.fbar{height:16px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line2)}
+.fbar span{display:block;height:100%;border-radius:4px}
+.frow .fr{font-family:var(--mono);font-weight:600;text-align:right}
+
+.empty{padding:40px;text-align:center;color:var(--faint);font-size:13px}
+.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--faint);font-size:11.5px;line-height:1.6}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media(max-width:900px){.kpis,.stripe{grid-template-columns:repeat(2,1fr)}.grid2,.grid-split{grid-template-columns:1fr}.events{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><div class="wrap">
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">All About Hair × KakaOnline · FB CPAS</div>
+      <h1>June 2026 Performance</h1>
+      <div class="sub">AWO (always-on hero SKU) &amp; Promotion (6.6 / 15.6 / 25.6) · plan-benchmarked · revenue via GA-linked purchase value</div>
+    </div>
+    <span class="livepill"><span class="dot"></span> Live · synced through 30 Jun</span>
+  </div>
+
+  <div class="controls">
+    <div class="ctl"><label>From</label><input type="date" id="from"></div>
+    <div class="ctl"><label>To</label><input type="date" id="to"></div>
+    <div class="ctl"><label>Quick range</label>
+      <div class="chips" id="chips">
+        <button data-r="full" class="on">Full month</button>
+        <button data-r="0606">Double Day 6.6</button>
+        <button data-r="1506">Mid-Month 15.6</button>
+        <button data-r="2506">End-Month 25.6</button>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="ctl"><label>Campaign</label>
+      <div class="seg" id="seg">
+        <button data-v="all" class="on">All</button>
+        <button data-v="awo">AWO only</button>
+        <button data-v="promo">Promotion only</button>
+      </div>
+    </div>
+  </div>
+  <div class="insight" id="insight"></div>
+
+  <div class="secttl">Headline vs plan — the four benchmark metrics</div>
+  <div class="kpis" id="kpis"></div>
+  <div class="stripe" id="stripe"></div>
+  <div class="legend">
+    <span>Grade vs the <b>June plan</b> for the selected range:</span>
+    <span><i style="background:var(--good)"></i>on/above</span>
+    <span><i style="background:var(--warn)"></i>within 20%</span>
+    <span><i style="background:var(--bad)"></i>&gt;20% off</span>
+  </div>
+
+  <div class="secttl">Pacing — spend, GMV &amp; ROAS growth in one view</div>
+  <div class="panel">
+    <h3 id="paceT">Cumulative pacing &amp; ROAS growth</h3>
+    <p class="ph">Solid = actual cumulative Spend &amp; GMV (left axis). Dashed = plan. Plum line = ROAS growth, i.e. cumulative GMV ÷ cumulative Spend to date (right axis).</p>
+    <div class="chart-h tall"><canvas id="paceChart"></canvas></div>
+  </div>
+
+  <div class="secttl" id="cmpSec">AWO vs Promotion — where the budget went</div>
+  <div class="grid-split">
+    <div class="panel">
+      <h3>Spend &amp; GMV vs plan</h3>
+      <p class="ph">Bar = actual, black tick = plan target.</p>
+      <div class="cmp" id="cmp"></div>
+    </div>
+    <div class="panel">
+      <h3>ROAS — actual vs plan</h3>
+      <p class="ph">By campaign type for the selected range.</p>
+      <div class="chart-h sm"><canvas id="effChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="secttl">Daily performance</div>
+  <div class="panel">
+    <h3 id="dailyT">Daily GMV &amp; ROAS</h3>
+    <p class="ph" id="dailyP"></p>
+    <div class="chart-h"><canvas id="dailyChart"></canvas></div>
+  </div>
+
+  <div class="secttl">Sale events in range</div>
+  <div class="events" id="events"></div>
+
+  <div class="secttl">Funnel efficiency (ROAS by audience stage)</div>
+  <div class="panel"><div class="funnel" id="funnel"></div></div>
+
+  <div class="secttl">Audience analysis — graded on account average (no plan)</div>
+  <div class="grid-split">
+    <div class="panel">
+      <h3>Cost vs return quadrant</h3>
+      <p class="ph">Split by campaign type — each bubble is a pure segment. X = CPC, Y = ROAS, size = spend. Crosshairs at the range average (ROAS <b id="bR"></b>×, CPC <b id="bC"></b>). Top-left is best.</p>
+      <div class="chart-h"><canvas id="audChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Read at a glance</h3>
+      <p class="ph">Each audience within its campaign type vs the blended average.</p>
+      <div class="funnel" id="audMini"></div>
+      <div class="legend"><span><i style="background:var(--good)"></i>Scale</span><span><i style="background:#5B9E7E"></i>Keep</span><span><i style="background:var(--warn)"></i>Fix</span><span><i style="background:var(--bad)"></i>Cut</span></div>
+    </div>
+  </div>
+  <div class="tblwrap" style="margin-top:14px"><table id="audTbl"><thead><tr>
+    <th data-k="au">Audience</th><th data-k="s">Spend</th><th data-k="r">GMV</th><th data-k="roas">ROAS</th>
+    <th data-k="cpc">CPC</th><th data-k="ctr">CTR</th><th data-k="cr">%CR</th><th data-k="p">Orders</th><th>Verdict</th>
+  </tr></thead><tbody></tbody></table></div>
+
+  <div class="secttl">Campaign detail</div>
+  <div class="tblwrap"><table id="tbl"><thead><tr>
+    <th data-k="cn">Campaign</th><th data-k="s">Spend</th><th data-k="r">GMV</th><th data-k="roas">ROAS</th>
+    <th data-k="c">Clicks</th><th data-k="cpc">CPC</th><th data-k="p">Orders</th><th data-k="cr">%CR</th>
+  </tr></thead><tbody></tbody></table></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const RT={"rows":[{"d":"2026-06-30","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":765,"r":0,"c":0,"i":9,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":138477,"r":1108101,"c":33,"i":2917,"p":5},{"d":"2026-06-30","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":61689,"r":0,"c":8,"i":1232,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":119235,"r":241080,"c":32,"i":2467,"p":1},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":78803,"r":0,"c":113,"i":5423,"p":0},{"d":"2026-06-30","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":61124,"r":0,"c":11,"i":1326,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":5458,"r":0,"c":2,"i":122,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":85918,"r":209000,"c":21,"i":1740,"p":1},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":25032,"r":0,"c":54,"i":1985,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":111508,"r":0,"c":41,"i":2420,"p":0},{"d":"2026-06-30","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":22069,"r":0,"c":8,"i":395,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":149504,"r":0,"c":96,"i":6804,"p":0},{"d":"2026-06-29","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":67878,"r":209000,"c":22,"i":1936,"p":1},{"d":"2026-06-29","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":61373,"r":0,"c":9,"i":1824,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":135349,"r":0,"c":45,"i":3693,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":90751,"r":0,"c":22,"i":2566,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":54781,"r":209000,"c":14,"i":1385,"p":1},{"d":"2026-06-29","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":291,"r":0,"c":0,"i":25,"p":0},{"d":"2026-06-29","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":121090,"r":0,"c":45,"i":2810,"p":0},{"d":"2026-06-28","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":438000,"c":0,"i":0,"p":1},{"d":"2026-06-27","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-27","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-27","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-27","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-27","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":44708,"r":0,"c":15,"i":687,"p":0},{"d":"2026-06-26","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":41032,"r":0,"c":10,"i":816,"p":0},{"d":"2026-06-26","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":45069,"r":602000,"c":8,"i":1358,"p":2},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":87032,"r":0,"c":128,"i":5045,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":72768,"r":219000,"c":10,"i":1048,"p":1},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":43037,"r":0,"c":9,"i":556,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":37479,"r":0,"c":11,"i":413,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":88083,"r":219000,"c":19,"i":1134,"p":1},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":57952,"r":0,"c":74,"i":3807,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":115833,"r":0,"c":40,"i":1912,"p":0},{"d":"2026-06-26","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":41239,"r":0,"c":6,"i":509,"p":0},{"d":"2026-06-25","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":116233,"r":529000,"c":19,"i":1831,"p":2},{"d":"2026-06-25","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":47646,"r":3037400,"c":18,"i":1174,"p":8},{"d":"2026-06-25","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":37449,"r":930000,"c":5,"i":1182,"p":3},{"d":"2026-06-25","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":269000,"c":0,"i":0,"p":1},{"d":"2026-06-25","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":10660,"r":0,"c":16,"i":709,"p":0},{"d":"2026-06-25","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":162388,"r":438000,"c":51,"i":3104,"p":2},{"d":"2026-06-25","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":13156,"r":0,"c":11,"i":254,"p":0},{"d":"2026-06-25","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":59323,"r":0,"c":11,"i":1089,"p":0},{"d":"2026-06-25","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":71740,"r":301000,"c":9,"i":1346,"p":1},{"d":"2026-06-25","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":187915,"r":0,"c":239,"i":10894,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":29181,"r":0,"c":12,"i":432,"p":0},{"d":"2026-06-24","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":228372,"r":6170000,"c":60,"i":5415,"p":8},{"d":"2026-06-24","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":79760,"r":0,"c":11,"i":1870,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":381916,"r":0,"c":95,"i":15545,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":187111,"r":0,"c":194,"i":11386,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":5108,"r":0,"c":2,"i":66,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":107255,"r":0,"c":26,"i":1904,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":19491,"r":0,"c":6,"i":658,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":38084,"r":0,"c":14,"i":1954,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":1380,"r":0,"c":0,"i":104,"p":0},{"d":"2026-06-24","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":69,"r":0,"c":0,"i":1,"p":0},{"d":"2026-06-23","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":77618,"r":0,"c":12,"i":2507,"p":0},{"d":"2026-06-23","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":205659,"r":0,"c":68,"i":6222,"p":0},{"d":"2026-06-22","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-22","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-22","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-21","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-21","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-21","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-20","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":219000,"c":0,"i":0,"p":1},{"d":"2026-06-20","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":219000,"c":0,"i":0,"p":1},{"d":"2026-06-19","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-18","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":605000,"c":0,"i":0,"p":1},{"d":"2026-06-18","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":219000,"c":0,"i":0,"p":1},{"d":"2026-06-17","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":35106,"r":0,"c":5,"i":423,"p":0},{"d":"2026-06-17","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":77952,"r":0,"c":13,"i":1079,"p":0},{"d":"2026-06-17","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":144013,"r":682000,"c":49,"i":1999,"p":3},{"d":"2026-06-17","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-17","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-17","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-16","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":360000,"r":244000,"c":135,"i":4540,"p":1},{"d":"2026-06-16","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":124335,"r":0,"c":18,"i":2188,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":140921,"r":488000,"c":30,"i":3027,"p":1},{"d":"2026-06-16","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":60049,"r":0,"c":6,"i":822,"p":0},{"d":"2026-06-16","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":44091,"r":0,"c":10,"i":798,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":803,"r":0,"c":0,"i":21,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":22711,"r":0,"c":14,"i":412,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":67418,"r":0,"c":122,"i":4794,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":100307,"r":438000,"c":23,"i":2540,"p":2},{"d":"2026-06-16","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":119495,"r":0,"c":97,"i":5256,"p":0},{"d":"2026-06-16","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":21491,"r":0,"c":8,"i":427,"p":0},{"d":"2026-06-15","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":254601,"r":1934000,"c":56,"i":5907,"p":6},{"d":"2026-06-15","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":302002,"r":1522000,"c":68,"i":5325,"p":4},{"d":"2026-06-15","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":99169,"r":0,"c":19,"i":2453,"p":0},{"d":"2026-06-15","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":54907,"r":0,"c":9,"i":935,"p":0},{"d":"2026-06-15","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-15","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":113630,"r":0,"c":13,"i":2451,"p":0},{"d":"2026-06-15","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":12622,"r":0,"c":13,"i":909,"p":0},{"d":"2026-06-15","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":49128,"r":219000,"c":7,"i":885,"p":1},{"d":"2026-06-15","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":226809,"r":748000,"c":86,"i":4581,"p":3},{"d":"2026-06-15","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":221701,"r":0,"c":345,"i":15851,"p":0},{"d":"2026-06-15","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":341020,"r":2244000,"c":108,"i":7873,"p":9},{"d":"2026-06-15","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":250020,"r":657000,"c":88,"i":7894,"p":3},{"d":"2026-06-14","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":45082,"r":0,"c":13,"i":933,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":46770,"r":0,"c":70,"i":3581,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":52200,"r":0,"c":28,"i":1128,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":1557,"r":0,"c":0,"i":41,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":60789,"r":0,"c":7,"i":1283,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":9887,"r":0,"c":20,"i":735,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":7664,"r":0,"c":4,"i":189,"p":0},{"d":"2026-06-14","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":49363,"r":0,"c":18,"i":1047,"p":0},{"d":"2026-06-14","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":93116,"r":0,"c":15,"i":1533,"p":0},{"d":"2026-06-14","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":81035,"r":0,"c":40,"i":3578,"p":0},{"d":"2026-06-14","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":79103,"r":0,"c":28,"i":1740,"p":0},{"d":"2026-06-14","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":88010,"r":0,"c":13,"i":1060,"p":0},{"d":"2026-06-14","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":84899,"r":219000,"c":12,"i":1389,"p":1},{"d":"2026-06-14","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":80463,"r":0,"c":36,"i":2169,"p":0},{"d":"2026-06-14","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":122887,"r":1397000,"c":41,"i":2236,"p":5},{"d":"2026-06-13","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":168229,"r":492000,"c":30,"i":3082,"p":1},{"d":"2026-06-13","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-13","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":191053,"r":299000,"c":49,"i":1758,"p":1},{"d":"2026-06-13","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":184541,"r":0,"c":75,"i":4025,"p":0},{"d":"2026-06-13","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":141333,"r":535000,"c":15,"i":2575,"p":1},{"d":"2026-06-13","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":166848,"r":0,"c":23,"i":2209,"p":0},{"d":"2026-06-13","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":161273,"r":0,"c":62,"i":2280,"p":0},{"d":"2026-06-13","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":121412,"r":0,"c":52,"i":5743,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":54171,"r":508000,"c":17,"i":976,"p":2},{"d":"2026-06-13","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":845,"r":0,"c":0,"i":14,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":5783,"r":0,"c":7,"i":142,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":25258,"r":0,"c":12,"i":432,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":9130,"r":0,"c":21,"i":614,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":40858,"r":0,"c":69,"i":2846,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":68425,"r":0,"c":12,"i":1421,"p":0},{"d":"2026-06-13","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":45036,"r":0,"c":8,"i":1172,"p":0},{"d":"2026-06-12","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":82143,"r":0,"c":14,"i":1277,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-12","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":83698,"r":219000,"c":18,"i":1163,"p":1},{"d":"2026-06-12","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":79151,"r":0,"c":28,"i":3097,"p":0},{"d":"2026-06-12","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":76765,"r":0,"c":11,"i":1595,"p":0},{"d":"2026-06-12","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":79883,"r":0,"c":8,"i":1208,"p":0},{"d":"2026-06-12","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":77951,"r":0,"c":23,"i":943,"p":0},{"d":"2026-06-12","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":73962,"r":0,"c":35,"i":3800,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":24254,"r":0,"c":3,"i":412,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":40315,"r":219000,"c":9,"i":1000,"p":1},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":56985,"r":0,"c":33,"i":1142,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":16343,"r":0,"c":24,"i":1207,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":27723,"r":0,"c":61,"i":2044,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":40359,"r":0,"c":7,"i":1055,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":35,"r":0,"c":0,"i":1,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":40762,"r":0,"c":6,"i":1344,"p":0},{"d":"2026-06-12","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":9106,"r":0,"c":4,"i":206,"p":0},{"d":"2026-06-11","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":62068,"r":0,"c":22,"i":2812,"p":0},{"d":"2026-06-11","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":59804,"r":0,"c":21,"i":1876,"p":0},{"d":"2026-06-11","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":58462,"r":0,"c":34,"i":2314,"p":0},{"d":"2026-06-11","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":63009,"r":296942,"c":36,"i":2622,"p":1},{"d":"2026-06-11","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":58991,"r":0,"c":22,"i":1999,"p":0},{"d":"2026-06-11","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":73866,"r":219000,"c":39,"i":2950,"p":1},{"d":"2026-06-11","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-11","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":58158,"r":0,"c":18,"i":2826,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":12534,"r":0,"c":1,"i":472,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":616,"r":0,"c":0,"i":25,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":17912,"r":0,"c":10,"i":414,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":37080,"r":0,"c":14,"i":907,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":16726,"r":0,"c":16,"i":949,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":61838,"r":0,"c":52,"i":3116,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":5973,"r":0,"c":2,"i":203,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":5118,"r":0,"c":3,"i":174,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":13064,"r":0,"c":6,"i":438,"p":0},{"d":"2026-06-11","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":7402,"r":0,"c":3,"i":329,"p":0},{"d":"2026-06-10","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":76203,"r":0,"c":27,"i":3294,"p":0},{"d":"2026-06-10","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":438000,"c":0,"i":0,"p":2},{"d":"2026-06-10","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-10","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":0,"r":0,"c":0,"i":0,"p":0},{"d":"2026-06-10","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":82001,"r":0,"c":49,"i":3558,"p":0},{"d":"2026-06-10","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":79991,"r":0,"c":48,"i":7397,"p":0},{"d":"2026-06-10","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":80046,"r":0,"c":33,"i":3791,"p":0},{"d":"2026-06-10","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":79719,"r":0,"c":35,"i":3410,"p":0},{"d":"2026-06-10","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":77650,"r":0,"c":28,"i":2869,"p":0},{"d":"2026-06-10","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":79624,"r":0,"c":38,"i":3072,"p":0},{"d":"2026-06-09","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":78031,"r":0,"c":35,"i":3841,"p":0},{"d":"2026-06-09","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":0,"r":219000,"c":0,"i":0,"p":1},{"d":"2026-06-09","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":87621,"r":0,"c":31,"i":3565,"p":0},{"d":"2026-06-09","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":82560,"r":0,"c":41,"i":3063,"p":0},{"d":"2026-06-09","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":82461,"r":0,"c":40,"i":2935,"p":0},{"d":"2026-06-09","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":68529,"r":0,"c":27,"i":2787,"p":0},{"d":"2026-06-09","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":86028,"r":0,"c":50,"i":7871,"p":0},{"d":"2026-06-09","t":"AWO","f":"Lookalike","au":"Lookalike","o":"Purchase","cn":"Purchase \u00b7 Lookalike","s":81977,"r":0,"c":40,"i":2653,"p":0},{"d":"2026-06-08","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":37476,"r":0,"c":17,"i":1521,"p":0},{"d":"2026-06-08","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":47518,"r":0,"c":16,"i":1735,"p":0},{"d":"2026-06-08","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":52255,"r":0,"c":63,"i":2597,"p":0},{"d":"2026-06-08","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":50497,"r":0,"c":36,"i":1069,"p":0},{"d":"2026-06-08","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":53062,"r":0,"c":21,"i":2084,"p":0},{"d":"2026-06-08","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":53216,"r":0,"c":30,"i":10222,"p":0},{"d":"2026-06-08","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":17590,"r":0,"c":2,"i":653,"p":0},{"d":"2026-06-08","t":"AWO","f":"Retargeting","au":"Retargeting Cat","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":10726,"r":0,"c":5,"i":431,"p":0},{"d":"2026-06-08","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":27558,"r":0,"c":11,"i":2222,"p":0},{"d":"2026-06-08","t":"AWO","f":"Prospecting","au":"Hair Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":31639,"r":0,"c":23,"i":9016,"p":0},{"d":"2026-06-07","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":297889,"r":0,"c":128,"i":11543,"p":0},{"d":"2026-06-07","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":14117,"r":209000,"c":6,"i":625,"p":1},{"d":"2026-06-07","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":306734,"r":846000,"c":200,"i":7748,"p":4},{"d":"2026-06-07","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":388443,"r":0,"c":610,"i":30843,"p":0},{"d":"2026-06-07","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":132559,"r":0,"c":61,"i":5440,"p":0},{"d":"2026-06-06","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":365350,"r":0,"c":602,"i":27595,"p":0},{"d":"2026-06-06","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":0,"r":0,"c":0,"i":1,"p":0},{"d":"2026-06-06","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":680,"r":0,"c":0,"i":39,"p":0},{"d":"2026-06-06","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":173610,"r":299000,"c":77,"i":7404,"p":1},{"d":"2026-06-06","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":406894,"r":0,"c":223,"i":9623,"p":0},{"d":"2026-06-06","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":123863,"r":0,"c":29,"i":4600,"p":0},{"d":"2026-06-06","t":"Promotion","f":"Retargeting","au":"Retargeting","o":"Purchase","cn":"Purchase \u00b7 Retargeting","s":280347,"r":0,"c":107,"i":12867,"p":0},{"d":"2026-06-06","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":94,"r":0,"c":0,"i":1,"p":0},{"d":"2026-06-05","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":1831,"r":0,"c":0,"i":98,"p":0},{"d":"2026-06-05","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":7,"r":0,"c":0,"i":2,"p":0},{"d":"2026-06-05","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"View Content","cn":"View Content \u00b7 Prospecting","s":120249,"r":0,"c":146,"i":7798,"p":0},{"d":"2026-06-05","t":"Promotion","f":"Prospecting","au":"Personal Care","o":"ATC","cn":"ATC \u00b7 Prospecting","s":16137,"r":0,"c":8,"i":303,"p":0},{"d":"2026-06-05","t":"AWO","f":"Prospecting","au":"Personal Care","o":"Purchase","cn":"Purchase \u00b7 Prospecting","s":24,"r":0,"c":0,"i":1,"p":0}],"plan":[{"d":"2026-06-01","ca":500000,"cp":0,"ga":600000,"gp":0,"ka":92.6,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-02","ca":500000,"cp":0,"ga":600000,"gp":0,"ka":92.6,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-03","ca":500000,"cp":0,"ga":600000,"gp":0,"ka":92.6,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-04","ca":600000,"cp":0,"ga":600000,"gp":0,"ka":105.3,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-05","ca":200000,"cp":800000,"ga":500000,"gp":2723288,"ka":33.3,"kp":121.2,"pa":1.71,"pp":9.33},{"d":"2026-06-06","ca":240000,"cp":960000,"ga":500000,"gp":2723288,"ka":40.0,"kp":145.4,"pa":1.71,"pp":9.33},{"d":"2026-06-07","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":109.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-08","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-09","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-10","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-11","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-12","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-13","ca":633333,"cp":0,"ga":700000,"gp":0,"ka":117.3,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-14","ca":200000,"cp":800000,"ga":500000,"gp":2200000,"ka":33.3,"kp":121.2,"pa":1.71,"pp":7.54},{"d":"2026-06-15","ca":200000,"cp":800000,"ga":500000,"gp":2200000,"ka":33.3,"kp":121.2,"pa":1.71,"pp":7.54},{"d":"2026-06-16","ca":600000,"cp":0,"ga":744000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.55,"pp":0.0},{"d":"2026-06-17","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-18","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-19","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-20","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-21","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-22","ca":600000,"cp":0,"ga":700000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-23","ca":620000,"cp":0,"ga":700000,"gp":0,"ka":114.8,"kp":0.0,"pa":2.4,"pp":0.0},{"d":"2026-06-24","ca":153200,"cp":612800,"ga":500000,"gp":2200000,"ka":25.5,"kp":92.8,"pa":1.71,"pp":7.54},{"d":"2026-06-25","ca":160000,"cp":640000,"ga":500000,"gp":2200000,"ka":26.7,"kp":96.9,"pa":1.71,"pp":7.54},{"d":"2026-06-26","ca":600000,"cp":0,"ga":600000,"gp":0,"ka":111.1,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-27","ca":620000,"cp":0,"ga":600000,"gp":0,"ka":114.8,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-28","ca":620000,"cp":0,"ga":600000,"gp":0,"ka":114.8,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-29","ca":620000,"cp":0,"ga":600000,"gp":0,"ka":114.8,"kp":0.0,"pa":2.06,"pp":0.0},{"d":"2026-06-30","ca":620000,"cp":0,"ga":600000,"gp":0,"ka":114.8,"kp":0.0,"pa":2.06,"pp":0.0}],"minD":"2026-06-05","maxD":"2026-06-30","planMinD":"2026-06-01","planMaxD":"2026-06-30"};
+const ROWS=RT.rows, PLAN=RT.plan;
+const vnd=n=>new Intl.NumberFormat('en-US').format(Math.round(n||0));
+const M=n=>((n||0)/1e6).toFixed(1)+'M';
+const pct=n=>((n||0)*100).toFixed(2)+'%';
+const CO={awo:'#2F6C93',promo:'#D2622E',plan:'#A9A395',ink:'#1C1B22',good:'#1E8F63',warn:'#C08A15',bad:'#C24242',accent:'#8C3A70',spend:'#586471'};
+let VIEW='all', FROM=RT.planMinD, TO=RT.planMaxD;
+const T=v=>v==='awo'?'AWO':'Promotion';
+const inR=d=>d>=FROM&&d<=TO;
+const div=(a,b)=>b?a/b:0;
+
+function fRows(){return ROWS.filter(x=>inR(x.d)&&(VIEW==='all'||x.t===T(VIEW)));}
+function sumRows(rs){let o={s:0,r:0,c:0,i:0,p:0};rs.forEach(x=>{o.s+=x.s;o.r+=x.r;o.c+=x.c;o.i+=x.i;o.p+=x.p;});return o;}
+function metrics(o){return{...o,roas:div(o.r,o.s),cpc:div(o.s,o.c),cr:div(o.p,o.c),aov:div(o.r,o.p),cpo:div(o.s,o.p),ctr:div(o.c,o.i),cpm:div(o.s,o.i)*1000};}
+function planAgg(){let o={cost:0,gmv:0,clk:0,pur:0};PLAN.filter(p=>inR(p.d)).forEach(p=>{
+  if(VIEW==='awo'){o.cost+=p.ca;o.gmv+=p.ga;o.clk+=p.ka;o.pur+=p.pa;}
+  else if(VIEW==='promo'){o.cost+=p.cp;o.gmv+=p.gp;o.clk+=p.kp;o.pur+=p.pp;}
+  else{o.cost+=p.ca+p.cp;o.gmv+=p.ga+p.gp;o.clk+=p.ka+p.kp;o.pur+=p.pa+p.pp;}});
+  return{...o,roas:div(o.gmv,o.cost),cpc:div(o.cost,o.clk),cr:div(o.pur,o.clk),aov:div(o.gmv,o.pur),cpo:div(o.cost,o.pur)};}
+// per-day actual by type within range
+function dayList(){let out=[],d=new Date(FROM+'T00:00:00'),e=new Date(TO+'T00:00:00');
+  while(d<=e){out.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}return out;}
+function dayAgg(){const map={};dayList().forEach(d=>map[d]={awo:{s:0,r:0},pro:{s:0,r:0},c:0,p:0});
+  ROWS.forEach(x=>{if(!inR(x.d))return;if(VIEW!=='all'&&x.t!==T(VIEW))return;const m=map[x.d];if(!m)return;
+    const k=x.t==='AWO'?'awo':'pro';m[k].s+=x.s;m[k].r+=x.r;m.c+=x.c;m.p+=x.p;});
+  const pm={};PLAN.forEach(p=>{if(!inR(p.d))return;pm[p.d]=VIEW==='awo'?{g:p.ga,c:p.ca}:VIEW==='promo'?{g:p.gp,c:p.cp}:{g:p.ga+p.gp,c:p.ca+p.cp};});
+  return{map,pm};}
+
+function grade(a,p,lb){if(!p)return'warn';const r=lb?p/a:a/p;return r>=1?'good':r>=0.8?'warn':'bad';}
+const GC={good:CO.good,warn:CO.warn,bad:CO.bad},GT={good:'ON PLAN',warn:'WATCH',bad:'BELOW'};
+
+/* ---------- KPIs ---------- */
+function renderKpis(){
+  const a=metrics(sumRows(fRows())), p=planAgg();
+  const cards=[
+    {k:'GMV (revenue)',av:M(a.r),pl:'plan '+M(p.gmv),prog:div(a.r,p.gmv),g:grade(a.r,p.gmv),foot:(div(a.r,p.gmv)*100).toFixed(0)+'% of plan'},
+    {k:'ROAS',av:a.roas.toFixed(2)+'×',pl:'plan '+p.roas.toFixed(2)+'×',prog:div(a.roas,p.roas),g:grade(a.roas,p.roas),foot:((div(a.roas,p.roas)-1)*100>=0?'+':'')+((div(a.roas,p.roas)-1)*100).toFixed(0)+'% vs plan'},
+    {k:'%CR (click→order)',av:pct(a.cr),pl:'plan '+pct(p.cr),prog:div(a.cr,p.cr),g:grade(a.cr,p.cr),foot:((div(a.cr,p.cr)-1)*100).toFixed(0)+'% vs plan'},
+    {k:'CPC',av:vnd(a.cpc),pl:'plan '+vnd(p.cpc),prog:Math.min(div(p.cpc,a.cpc),1.6),g:grade(a.cpc,p.cpc,true),foot:(a.cpc<p.cpc?'−':'+')+Math.abs((div(a.cpc,p.cpc)-1)*100).toFixed(0)+'% vs plan'},
+  ];
+  document.getElementById('kpis').innerHTML=cards.map(c=>{
+    const col=GC[c.g],w=Math.max(3,Math.min(100,(c.prog||0)*100));
+    return `<div class="card"><div class="edge" style="background:${col}"></div>
+      <div class="kl"><span>${c.k}</span><span class="badge b-${c.g}">${GT[c.g]}</span></div>
+      <div class="kv">${c.av}</div><div class="kmeta">${c.pl} · <b>${c.foot}</b></div>
+      <div class="bar"><span style="width:${w}%;background:${col}"></span></div></div>`;}).join('');
+  const st=[
+    {l:'Spend',v:M(a.s),d:vnd((div(a.s,p.cost)*100))+'% of budget'},
+    {l:'Orders',v:vnd(a.p),d:'plan '+vnd(Math.round(p.pur))},
+    {l:'AOV',v:vnd(a.aov),d:'plan '+vnd(p.aov)},
+    {l:'Clicks',v:vnd(a.c),d:'plan '+vnd(Math.round(p.clk))},
+    {l:'CTR',v:pct(a.ctr),d:'imp '+vnd(a.i)},
+    {l:'CPO (cost/order)',v:vnd(a.cpo),d:'plan '+vnd(p.cpo)},
+  ];
+  document.getElementById('stripe').innerHTML=st.map(s=>`<div class="st"><div class="sl">${s.l}</div><div class="sv">${s.v}</div><div class="sd">${s.d}</div></div>`).join('');
+}
+
+/* ---------- pacing (spend + gmv + ROAS growth) ---------- */
+let paceChart;
+function renderPace(){
+  const {map,pm}=dayAgg();const days=dayList();
+  let cs=0,cg=0,cps=0,cpg=0;
+  const labels=[],aSpend=[],aGmv=[],pSpend=[],pGmv=[],roasG=[];
+  days.forEach(d=>{const m=map[d];const ds=(m.awo.s+m.pro.s),dg=(m.awo.r+m.pro.r);
+    cs+=ds;cg+=dg;const pl=pm[d]||{g:0,c:0};cps+=pl.c;cpg+=pl.g;
+    labels.push(d.slice(8));aSpend.push(cs);aGmv.push(cg);pSpend.push(cps);pGmv.push(cpg);roasG.push(cs?cg/cs:null);});
+  const ctx=document.getElementById('paceChart');if(paceChart)paceChart.destroy();
+  paceChart=new Chart(ctx,{data:{labels,datasets:[
+    {type:'line',label:'GMV — actual',data:aGmv,borderColor:CO.awo,borderWidth:2.5,pointRadius:0,fill:true,backgroundColor:'rgba(47,108,147,.09)',tension:.15,yAxisID:'y'},
+    {type:'line',label:'Spend — actual',data:aSpend,borderColor:CO.spend,borderWidth:2.5,pointRadius:0,fill:false,tension:.15,yAxisID:'y'},
+    {type:'line',label:'GMV — plan',data:pGmv,borderColor:CO.awo,borderDash:[5,4],borderWidth:1.4,pointRadius:0,fill:false,tension:.15,yAxisID:'y'},
+    {type:'line',label:'Spend — plan',data:pSpend,borderColor:CO.spend,borderDash:[5,4],borderWidth:1.4,pointRadius:0,fill:false,tension:.15,yAxisID:'y'},
+    {type:'line',label:'ROAS growth',data:roasG,borderColor:CO.accent,borderWidth:2.4,pointRadius:0,spanGaps:true,tension:.2,yAxisID:'y2'},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{font:{family:'Inter',size:11},usePointStyle:true,pointStyle:'line',boxWidth:20,color:'#6E6A60'}},
+      tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?('ROAS to date: '+(c.parsed.y??0).toFixed(2)+'×'):(c.dataset.label+': '+M(c.parsed.y))}}},
+    scales:{x:{grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:9},color:'#96907F',maxRotation:0,autoSkip:true,maxTicksLimit:16}},
+      y:{grid:{color:'#E9E5DC'},ticks:{font:{family:'IBM Plex Mono',size:10},color:'#96907F',callback:M},title:{display:true,text:'Cumulative VND',font:{size:10,family:'Inter'},color:'#96907F'}},
+      y2:{position:'right',grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:10},color:CO.accent,callback:v=>v+'×'},title:{display:true,text:'ROAS growth',font:{size:10,family:'Inter'},color:CO.accent}}}}});
+}
+
+/* ---------- AWO vs Promotion compare ---------- */
+function typeAgg(t){return metrics(sumRows(ROWS.filter(x=>inR(x.d)&&x.t===t)));}
+function planType(t){let o={cost:0,gmv:0};PLAN.filter(p=>inR(p.d)).forEach(p=>{if(t==='AWO'){o.cost+=p.ca;o.gmv+=p.ga;}else{o.cost+=p.cp;o.gmv+=p.gp;}});o.roas=div(o.gmv,o.cost);return o;}
+function renderCmp(){
+  const types=VIEW==='all'?['AWO','Promotion']:[T(VIEW)];
+  document.getElementById('cmpSec').textContent=VIEW==='all'?'AWO vs Promotion — where the budget went':T(VIEW)+' — actual vs plan';
+  const rows=types.map(t=>({t,cls:t==='AWO'?'tag-awo':'tag-promo',col:t==='AWO'?CO.awo:CO.promo,a:typeAgg(t),p:planType(t)}));
+  const maxS=Math.max(...rows.flatMap(r=>[r.a.s,r.p.cost]),1),maxG=Math.max(...rows.flatMap(r=>[r.a.r,r.p.gmv]),1);
+  document.getElementById('cmp').innerHTML=rows.map(r=>`
+    <div class="cmprow"><div class="cmpt"><span class="nm">${r.t} <i class="${r.cls}">spend</i></span>
+      <span style="font-family:var(--mono);color:${div(r.a.s,r.p.cost)>1.15?CO.bad:'var(--muted)'}"><b>${(div(r.a.s,r.p.cost)*100).toFixed(0)}%</b> of plan</span></div>
+      <div class="track"><div class="fill" style="width:${div(r.a.s,maxS)*100}%;background:${r.col}"></div><div class="planmark" style="left:${div(r.p.cost,maxS)*100}%"></div></div>
+      <div class="cmpnum"><span>actual <b>${M(r.a.s)}</b></span><span>plan ${M(r.p.cost)}</span></div></div>
+    <div class="cmprow"><div class="cmpt"><span class="nm">${r.t} <i class="${r.cls}">GMV</i></span>
+      <span style="font-family:var(--mono);color:${div(r.a.r,r.p.gmv)>=1?CO.good:'var(--muted)'}"><b>${(div(r.a.r,r.p.gmv)*100).toFixed(0)}%</b> of plan</span></div>
+      <div class="track"><div class="fill" style="width:${div(r.a.r,maxG)*100}%;background:${r.col};opacity:.55"></div><div class="planmark" style="left:${div(r.p.gmv,maxG)*100}%"></div></div>
+      <div class="cmpnum"><span>actual <b>${M(r.a.r)}</b></span><span>plan ${M(r.p.gmv)}</span></div></div>`).join('');
+}
+let effChart;
+function renderEff(){
+  const types=VIEW==='all'?['AWO','Promotion']:[T(VIEW)];
+  const ctx=document.getElementById('effChart');if(effChart)effChart.destroy();
+  effChart=new Chart(ctx,{type:'bar',data:{labels:types,datasets:[
+    {label:'Plan ROAS',data:types.map(t=>planType(t).roas),backgroundColor:'rgba(169,163,149,.55)',borderRadius:4,barPercentage:.62,categoryPercentage:.7},
+    {label:'Actual ROAS',data:types.map(t=>typeAgg(t).roas),backgroundColor:types.map(t=>t==='AWO'?CO.awo:CO.promo),borderRadius:4,barPercentage:.62,categoryPercentage:.7},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Inter',size:11},usePointStyle:true,pointStyle:'rectRounded',color:'#6E6A60'}},
+    tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toFixed(2)+'×'}}},
+    scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:11},color:'#6E6A60'}},y:{grid:{color:'#E9E5DC'},ticks:{font:{family:'IBM Plex Mono',size:10},color:'#96907F',callback:v=>v.toFixed(1)+'×'}}}}});
+}
+
+/* ---------- daily ---------- */
+let dailyChart;
+function renderDaily(){
+  const {map,pm}=dayAgg();const days=dayList();
+  document.getElementById('dailyP').textContent=VIEW==='all'?'Stacked bars = actual GMV (AWO + Promotion). Line = daily ROAS. Dashed = plan GMV/day.':'Bars = actual GMV. Line = daily ROAS. Dashed = plan GMV/day.';
+  const labels=days.map(d=>d.slice(8));
+  const awo=days.map(d=>map[d].awo.r),pro=days.map(d=>map[d].pro.r);
+  const spendDay=days.map(d=>map[d].awo.s+map[d].pro.s),gmvDay=days.map(d=>map[d].awo.r+map[d].pro.r);
+  const roasDay=days.map((d,i)=>spendDay[i]?gmvDay[i]/spendDay[i]:null);
+  const planDay=days.map(d=>(pm[d]||{g:0}).g);
+  const ds=[];
+  if(VIEW==='all'){
+    ds.push({type:'bar',label:'AWO GMV',data:awo,backgroundColor:CO.awo,stack:'g',borderRadius:{topLeft:3,topRight:3},order:3});
+    ds.push({type:'bar',label:'Promotion GMV',data:pro,backgroundColor:CO.promo,stack:'g',borderRadius:{topLeft:3,topRight:3},order:3});
+  }else{
+    ds.push({type:'bar',label:T(VIEW)+' GMV',data:gmvDay,backgroundColor:VIEW==='awo'?CO.awo:CO.promo,stack:'g',borderRadius:{topLeft:3,topRight:3},order:3});
+  }
+  ds.push({type:'line',label:'Plan GMV/day',data:planDay,borderColor:CO.plan,borderDash:[5,4],borderWidth:1.6,pointRadius:0,order:1,yAxisID:'y'});
+  ds.push({type:'line',label:'ROAS',data:roasDay,borderColor:CO.accent,borderWidth:2,pointRadius:2,spanGaps:true,order:0,yAxisID:'y2',tension:.2});
+  const ctx=document.getElementById('dailyChart');if(dailyChart)dailyChart.destroy();
+  dailyChart=new Chart(ctx,{data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{font:{family:'Inter',size:11},usePointStyle:true,boxWidth:14,color:'#6E6A60'}},
+      tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?('ROAS: '+(c.parsed.y??0).toFixed(2)+'×'):(c.dataset.label+': '+M(c.parsed.y||0))}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:9},color:'#96907F',maxRotation:0,autoSkip:true,maxTicksLimit:16}},
+      y:{stacked:true,grid:{color:'#E9E5DC'},ticks:{font:{family:'IBM Plex Mono',size:10},color:'#96907F',callback:M},title:{display:true,text:'GMV / day',font:{size:10,family:'Inter'},color:'#96907F'}},
+      y2:{position:'right',grid:{display:false},ticks:{font:{family:'IBM Plex Mono',size:10},color:CO.accent,callback:v=>v+'×'}}}}});
+}
+
+/* ---------- sale events ---------- */
+const EVENTS=[{name:'Double Day 6.6',days:['2026-06-05','2026-06-06'],main:'06'},
+  {name:'Mid-Month 15.6',days:['2026-06-14','2026-06-15'],main:'15'},
+  {name:'End-Month 25.6',days:['2026-06-24','2026-06-25'],main:'25'}];
+function renderEvents(){
+  const bench=planAgg().roas||1.66;
+  const active=EVENTS.filter(e=>e.days.some(inR));
+  if(!active.length){document.getElementById('events').innerHTML='<div class="panel empty">No sale event falls inside the selected date range.</div>';return;}
+  document.getElementById('events').innerHTML=active.map(e=>{
+    const rs=ROWS.filter(x=>e.days.includes(x.d)&&(VIEW==='all'||x.t===T(VIEW)));const a=metrics(sumRows(rs));
+    const g=a.roas>=3?'good':a.roas>=bench?'warn':'bad';
+    const vd={good:['var(--good)','Strong — well above plan ROAS.'],warn:['var(--warn)','Near plan — room to push.'],bad:['var(--bad)','Underdelivered — spend outran orders.']}[g];
+    return `<div class="ev"><div class="edge" style="background:${vd[0]}"></div>
+      <div class="evd">${e.days[0].slice(8)}–${e.days[1].slice(8)} Jun · incl. ramp day</div><h4>${e.name}</h4>
+      <div class="roasbig" style="color:${vd[0]}">${a.roas.toFixed(2)}×</div><div class="roaslb">ROAS · plan ${bench.toFixed(2)}×</div>
+      <div class="evgrid"><span class="l">Spend</span><span class="v">${M(a.s)}</span><span class="l">GMV</span><span class="v">${M(a.r)}</span>
+        <span class="l">Orders</span><span class="v">${a.p}</span><span class="l">%CR</span><span class="v">${pct(a.cr)}</span></div>
+      <div class="insight" style="margin:12px 0 0;border-left-color:${vd[0]}">${vd[1]}</div></div>`;}).join('');
+}
+
+/* ---------- funnel ---------- */
+function renderFunnel(){
+  const m={};fRows().forEach(x=>{const k=x.t+'|'+x.f;(m[k]=m[k]||{t:x.t,f:x.f,s:0,r:0}).s+=x.s;m[k].r+=x.r;});
+  let rows=Object.values(m).map(o=>({...o,roas:div(o.r,o.s)})).sort((a,b)=>b.roas-a.roas);
+  const max=Math.max(...rows.map(r=>r.roas),0.1),bench=div(sumRows(fRows()).r,sumRows(fRows()).s);
+  document.getElementById('funnel').innerHTML=rows.length?rows.map(r=>{
+    const col=r.t==='AWO'?CO.awo:CO.promo,good=r.roas>=bench;
+    return `<div class="frow"><div class="fl"><span class="pill ${r.t==='AWO'?'tag-awo':'tag-promo'}">${r.t}</span><b>${r.f}</b></div>
+      <div class="fbar"><span style="width:${r.roas/max*100}%;background:${col};opacity:${good?1:.5}"></span></div>
+      <div class="fr" style="color:${good?CO.good:CO.bad}">${r.roas.toFixed(2)}×</div></div>`;}).join(''):'<div class="empty">No data in range.</div>';
+}
+
+/* ---------- audience ---------- */
+function audSegs(){const m={};fRows().forEach(x=>{const k=x.t+'|'+x.au;(m[k]=m[k]||{t:x.t,au:x.au,s:0,r:0,c:0,i:0,p:0});const o=m[k];o.s+=x.s;o.r+=x.r;o.c+=x.c;o.i+=x.i;o.p+=x.p;});
+  return Object.values(m).map(o=>({...o,roas:div(o.r,o.s),cpc:div(o.s,o.c),cr:div(o.p,o.c),ctr:div(o.c,o.i)})).sort((a,b)=>b.s-a.s);}
+const VC={scale:CO.good,keep:'#5B9E7E',fix:CO.warn,cut:CO.bad},VL={scale:'Scale',keep:'Keep',fix:'Fix',cut:'Cut'},VBG={scale:'var(--good-bg)',keep:'#E2EFE9',fix:'var(--warn-bg)',cut:'var(--bad-bg)'};
+function verdict(a,b){if(a.roas===0)return'cut';if(a.roas>=b.roas&&a.cr>=b.cr)return'scale';if(a.roas>=b.roas)return'keep';return'fix';}
+let audChart,audK='s',audDir=-1;
+function renderAud(){
+  const segs=audSegs(),tot=metrics(sumRows(fRows()));const B={roas:tot.roas,cpc:tot.cpc,cr:tot.cr,ctr:tot.ctr};
+  segs.forEach(s=>s.v=verdict(s,B));
+  document.getElementById('bR').textContent=B.roas.toFixed(2);document.getElementById('bC').textContent=vnd(B.cpc);
+  // quadrant
+  const pts=segs.filter(s=>s.s>0).map(s=>({x:s.cpc,y:s.roas,r:Math.max(7,Math.sqrt(s.s)/95),a:s}));
+  const cross={id:'x',afterDraw(c){const{ctx,chartArea:ca,scales}=c;const xx=scales.x.getPixelForValue(B.cpc),yy=scales.y.getPixelForValue(B.roas);
+    ctx.save();ctx.strokeStyle='#C9C2B2';ctx.setLineDash([5,4]);ctx.lineWidth=1;ctx.beginPath();
+    ctx.moveTo(xx,ca.top);ctx.lineTo(xx,ca.bottom);ctx.moveTo(ca.left,yy);ctx.lineTo(ca.right,yy);ctx.stroke();ctx.restore();}};
+  const ctx=document.getElementById('audChart');if(audChart)audChart.destroy();
+  audChart=new Chart(ctx,{type:'bubble',data:{datasets:[{data:pts,backgroundColor:pts.map(p=>VC[p.a.v]+'CC'),borderColor:pts.map(p=>VC[p.a.v]),borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{title:c=>c[0].raw.a.t+' · '+c[0].raw.a.au,label:c=>{const a=c.raw.a;return['ROAS '+a.roas.toFixed(2)+'× · CPC '+vnd(a.cpc),'Spend '+M(a.s)+' · GMV '+M(a.r),'%CR '+pct(a.cr)+' · Orders '+a.p,'→ '+VL[a.v].toUpperCase()];}}}},
+      scales:{x:{title:{display:true,text:'CPC (VND) — cheaper →',font:{family:'Inter',size:10},color:'#96907F'},grid:{color:'#E9E5DC'},ticks:{font:{family:'IBM Plex Mono',size:10},color:'#96907F',callback:vnd},reverse:true},
+        y:{title:{display:true,text:'ROAS — higher ↑',font:{family:'Inter',size:10},color:'#96907F'},grid:{color:'#E9E5DC'},ticks:{font:{family:'IBM Plex Mono',size:10},color:'#96907F',callback:v=>v+'×'},beginAtZero:true}}},plugins:[cross]});
+  // mini
+  const max=Math.max(...segs.map(s=>s.roas),B.roas,0.1);
+  document.getElementById('audMini').innerHTML=segs.slice().sort((a,b)=>b.roas-a.roas).map(s=>`<div class="frow">
+    <div class="fl"><span class="pill ${s.t==='AWO'?'tag-awo':'tag-promo'}">${s.t}</span><b>${s.au}</b></div>
+    <div class="fbar"><span style="width:${s.roas/max*100}%;background:${VC[s.v]}"></span></div>
+    <div class="fr" style="color:${VC[s.v]}">${s.roas.toFixed(2)}×</div></div>`).join('')||'<div class="empty">No data.</div>';
+  // table
+  window.__aud=segs;renderAudTable(B);
+}
+function chip(val,ref,lb,unit){const r=lb?div(ref,val):div(val,ref);const c=(val===0&&!lb)?'bad':r>=1?'good':r>=0.8?'warn':'bad';
+  const bg={good:'var(--good-bg)',warn:'var(--warn-bg)',bad:'var(--bad-bg)'}[c],fg=GC[c];
+  return `<span class="chip" style="background:${bg};color:${fg}">${unit==='x'?val.toFixed(2)+'×':unit==='%'?pct(val):vnd(val)}</span>`;}
+function renderAudTable(B){
+  const segs=(window.__aud||[]).slice().sort((a,b)=>(a[audK]<b[audK]?1:-1)*audDir);
+  document.querySelector('#audTbl tbody').innerHTML=segs.length?segs.map(a=>`<tr>
+    <td class="name"><span class="pill ${a.t==='AWO'?'tag-awo':'tag-promo'}">${a.t}</span>${a.au}</td>
+    <td>${M(a.s)}</td><td>${M(a.r)}</td><td>${chip(a.roas,B.roas,false,'x')}</td>
+    <td>${chip(a.cpc,B.cpc,true,'')}</td><td>${chip(a.ctr,B.ctr,false,'%')}</td><td>${chip(a.cr,B.cr,false,'%')}</td>
+    <td>${a.p}</td><td><span class="chip" style="background:${VBG[a.v]};color:${VC[a.v]}">${VL[a.v]}</span></td></tr>`).join(''):'<tr><td colspan="9" class="empty">No data in range.</td></tr>';
+}
+document.querySelectorAll('#audTbl th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k===audK)audDir*=-1;else{audK=k;audDir=-1;}const tot=metrics(sumRows(fRows()));renderAudTable({roas:tot.roas,cpc:tot.cpc,cr:tot.cr,ctr:tot.ctr});});
+
+/* ---------- campaign table ---------- */
+let tblK='s',tblDir=-1;
+function campRows(){const m={};fRows().forEach(x=>{const k=x.t+'|'+x.cn;(m[k]=m[k]||{t:x.t,cn:x.cn,s:0,r:0,c:0,p:0});const o=m[k];o.s+=x.s;o.r+=x.r;o.c+=x.c;o.p+=x.p;});
+  return Object.values(m).map(o=>({...o,roas:div(o.r,o.s),cpc:div(o.s,o.c),cr:div(o.p,o.c)}));}
+function renderTable(){
+  const tot=metrics(sumRows(fRows())),B={roas:tot.roas,cpc:tot.cpc,cr:tot.cr};
+  const rows=campRows().sort((a,b)=>(a[tblK]<b[tblK]?1:-1)*tblDir);
+  document.querySelector('#tbl tbody').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td class="name"><span class="pill ${r.t==='AWO'?'tag-awo':'tag-promo'}">${r.t}</span>${r.cn}</td>
+    <td>${M(r.s)}</td><td>${M(r.r)}</td><td>${chip(r.roas,B.roas,false,'x')}</td>
+    <td>${vnd(r.c)}</td><td>${chip(r.cpc,B.cpc,true,'')}</td><td>${r.p}</td><td>${chip(r.cr,B.cr,false,'%')}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">No data in range.</td></tr>';
+}
+document.querySelectorAll('#tbl th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(k===tblK)tblDir*=-1;else{tblK=k;tblDir=-1;}renderTable();});
+
+/* ---------- insight ---------- */
+function renderInsight(){
+  const a=metrics(sumRows(fRows())),p=planAgg();
+  const segs=audSegs();const best=segs[0]?segs.slice().sort((x,y)=>y.roas-x.roas)[0]:null;
+  const worst=segs.filter(s=>s.s>300000).sort((x,y)=>x.roas-y.roas)[0];
+  const scope=VIEW==='all'?'All campaigns':T(VIEW)+' only';
+  const rv=div(a.roas,p.roas);
+  let txt=`<b>${scope}, ${FROM.slice(5)}→${TO.slice(5)}:</b> ${M(a.r)} GMV on ${M(a.s)} spend — ROAS <b>${a.roas.toFixed(2)}×</b> (${rv>=1?'+':''}${((rv-1)*100).toFixed(0)}% vs plan), %CR ${pct(a.cr)} vs plan ${pct(p.cr)}.`;
+  if(best&&worst&&best!==worst) txt+=` Best segment: <b>${best.t} · ${best.au}</b> at ${best.roas.toFixed(2)}×; weakest with real spend: <b>${worst.t} · ${worst.au}</b> at ${worst.roas.toFixed(2)}×.`;
+  document.getElementById('insight').innerHTML=txt;
+}
+
+/* ---------- orchestrate ---------- */
+function renderAll(){renderInsight();renderKpis();renderPace();renderCmp();renderEff();renderDaily();renderEvents();renderFunnel();renderAud();renderTable();}
+function setRange(f,t){FROM=f;TO=t;document.getElementById('from').value=f;document.getElementById('to').value=t;}
+document.getElementById('seg').addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.remove('on'));e.target.classList.add('on');VIEW=e.target.dataset.v;
+  const seg=document.getElementById('seg');seg.className='seg'+(VIEW==='awo'?' awo':VIEW==='promo'?' promo':'');renderAll();});
+document.getElementById('chips').addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#chips button').forEach(b=>b.classList.remove('on'));e.target.classList.add('on');
+  const r=e.target.dataset.r;const map={full:[RT.planMinD,RT.planMaxD],'0606':['2026-06-05','2026-06-06'],'1506':['2026-06-14','2026-06-15'],'2506':['2026-06-24','2026-06-25']};
+  setRange(...map[r]);renderAll();});
+function onDate(){FROM=document.getElementById('from').value;TO=document.getElementById('to').value;
+  document.querySelectorAll('#chips button').forEach(b=>b.classList.remove('on'));renderAll();}
+document.getElementById('from').addEventListener('change',onDate);
+document.getElementById('to').addEventListener('change',onDate);
+
+document.getElementById('foot').innerHTML=`<b>How to read:</b> grades compare actuals to the June media plan for whatever date range and campaign filter you pick. Revenue = GA-linked purchase value. AWO = always-on hero SKU; Promotion = 6.6 / 15.6 / 25.6 sale bursts. Everything recomputes client-side from the Raw Data_FB rows + Plan Daily. Source: All About Hair × KKO workbook.`;
+
+setRange(RT.planMinD,RT.planMaxD);renderAll();
+</script></body></html>
